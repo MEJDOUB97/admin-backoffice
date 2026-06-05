@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 44 41% 96%;
+  --foreground: 210 20% 16%;
+  --card: 0 0% 100%;
+  --card-foreground: 210 20% 16%;
+  --primary: 156 72% 34%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 36 62% 86%;
+  --secondary-foreground: 210 20% 16%;
+  --accent: 4 72% 58%;
+  --accent-foreground: 0 0% 100%;
+  --muted: 36 33% 92%;
+  --muted-foreground: 215 16% 40%;
+  --destructive: 1 76% 55%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 35 27% 82%;
+  --input: 35 27% 82%;
+  --ring: 156 72% 34%;
+  --sidebar: 210 23% 17%;
+  --sidebar-foreground: 44 41% 96%;
+  --sidebar-border: 210 18% 24%;
+  --sidebar-accent: 156 52% 24%;
+  --chart-emerald: 156 72% 34%;
+  --chart-sand: 36 72% 58%;
+  --chart-rose: 4 72% 58%;
+  --chart-ink: 210 23% 17%;
+  --chart-gold: 42 88% 58%;
+}
+
+.dark {
+  --background: 210 22% 11%;
+  --foreground: 44 41% 96%;
+  --card: 210 23% 15%;
+  --card-foreground: 44 41% 96%;
+  --primary: 156 66% 43%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 18% 22%;
+  --secondary-foreground: 44 41% 96%;
+  --accent: 4 72% 58%;
+  --accent-foreground: 0 0% 100%;
+  --muted: 210 16% 21%;
+  --muted-foreground: 35 14% 72%;
+  --destructive: 0 74% 56%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 210 16% 23%;
+  --input: 210 16% 23%;
+  --ring: 156 66% 43%;
+  --sidebar: 210 25% 10%;
+  --sidebar-foreground: 44 41% 96%;
+  --sidebar-border: 210 17% 20%;
+  --sidebar-accent: 210 18% 18%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    background-image: radial-gradient(circle at top left, rgba(16, 185, 129, 0.15), transparent 26%),
+      radial-gradient(circle at top right, rgba(239, 68, 68, 0.12), transparent 22%);
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    @apply outline-none ring-0;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-3xl border border-border/80 bg-card/90 shadow-panel backdrop-blur;
+  }
+
+  .metric-tile {
+    @apply panel p-5;
+  }
+
+  .section-title {
+    @apply text-lg font-semibold tracking-tight;
+  }
+
+  .subtle-text {
+    @apply text-sm text-muted-foreground;
+  }
+}
