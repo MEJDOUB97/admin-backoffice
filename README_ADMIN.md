@@ -69,6 +69,18 @@ admin-backoffice/
 - UI access checks use `src/components/common/PermissionGate.tsx`
 - Sensitive actions use `ReasonRequiredDialog` and are intended to create audit entries
 
+## Navigation update
+
+The main sidebar intentionally focuses on operational sections.
+Groups, expenses, settlements, reminders, and analytics are hidden from the sidebar.
+Group and expense details remain accessible from user profiles and internal links.
+
+## User to group flow
+
+User profiles intentionally show only the groups a user belongs to.
+Expense information is shown inside each group detail page.
+This keeps the user profile simple and makes the group the main context for expense review.
+
 ## Suggested backend endpoints
 
 - `POST /admin/auth/login`

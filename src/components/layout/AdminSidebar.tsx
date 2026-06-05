@@ -1,18 +1,13 @@
-import { BarChart3, FileWarning, Gauge, Home, LifeBuoy, LockKeyhole, Receipt, RefreshCcw, Settings2, ShieldAlert, Users, WalletCards } from "lucide-react";
+import { Home, LifeBuoy, LockKeyhole, Receipt, Settings2, ShieldAlert, Users } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { to: "/admin", label: "Overview", icon: Home },
+  { to: "/admin", label: "Dashboard", icon: Home },
   { to: "/admin/users", label: "Users", icon: Users },
-  { to: "/admin/groups", label: "Groups", icon: Gauge },
-  { to: "/admin/expenses", label: "Expenses", icon: WalletCards },
-  { to: "/admin/receipts", label: "Receipts", icon: Receipt },
-  { to: "/admin/settlements", label: "Settlements", icon: RefreshCcw },
-  { to: "/admin/reminders", label: "Reminders", icon: FileWarning },
+  { to: "/admin/receipts", label: "Receipts / OCR", icon: Receipt },
   { to: "/admin/support", label: "Support", icon: LifeBuoy },
   { to: "/admin/security", label: "Security", icon: ShieldAlert },
-  { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/admin/config", label: "Config", icon: Settings2 },
   { to: "/admin/audit", label: "Audit", icon: LockKeyhole },
 ];
