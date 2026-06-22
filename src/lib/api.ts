@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosHeaders } from "axios";
 import {
   auditLogs,
   categoryBreakdown,
@@ -17,11 +17,39 @@ import {
   users,
 } from "@/lib/mock-data";
 import { delay } from "@/lib/utils";
+import { clearPersistedAuth, notifyAuthExpired, readPersistedAuthToken } from "@/lib/authStorage";
 
 // TODO: Replace this mock API with authenticated backend endpoints for the admin back office.
 export const http = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? "/api/admin",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
 });
+
+http.interceptors.request.use((config) => {
+  const token = readPersistedAuthToken();
+
+  if (token) {
+    config.headers = AxiosHeaders.from(config.headers);
+    config.headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  return config;
+});
+
+http.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (axios.isAxiosError(error) && error.response?.status === 401 && !error.config?.url?.includes("/api/admin/auth/login")) {
+      clearPersistedAuth();
+      notifyAuthExpired();
+
+      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+        window.location.assign("/login");
+      }
+    }
+
+    return Promise.reject(error);
+  },
+);
 
 export const api = {
   getDashboard: async () =>

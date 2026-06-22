@@ -1,10 +1,10 @@
+import axios from "axios";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ShieldCheck } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
-import { MOCK_ADMIN_CREDENTIALS, validateMockCredentials } from "@/lib/auth";
 import { useAuthStore } from "@/store/authStore";
 
 const schema = z.object({
@@ -15,14 +15,17 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function LoginPage() {
+  const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const token = useAuthStore((state) => state.token);
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { email: MOCK_ADMIN_CREDENTIALS.email, password: MOCK_ADMIN_CREDENTIALS.password },
+    defaultValues: { email: "", password: "" },
   });
+  const isSubmitting = form.formState.isSubmitting;
 
-  if (isAuthenticated) {
+  if (isAuthenticated && token) {
     return <Navigate to="/admin" replace />;
   }
 
@@ -53,19 +56,30 @@ export default function LoginPage() {
                 <ShieldCheck className="h-6 w-6" />
               </div>
               <div>
-                <h2 className="text-2xl font-semibold">Mock admin login</h2>
-                <p className="subtle-text">Temporary auth for the isolated admin app. Real backend auth is still a TODO.</p>
+                <h2 className="text-2xl font-semibold">Admin login</h2>
+                <p className="subtle-text">Sign in with an administrator account.</p>
               </div>
             </div>
             <form
               className="space-y-5"
-              onSubmit={form.handleSubmit((values) => {
-                if (!validateMockCredentials(values.email, values.password)) {
-                  toast.error("Invalid mock admin credentials.");
-                  return;
+              onSubmit={form.handleSubmit(async (values) => {
+                try {
+                  await login(values.email, values.password);
+                  toast.success("Signed in to Hssabna Admin.");
+                  navigate("/admin", { replace: true });
+                } catch (error) {
+                  if (axios.isAxiosError(error) && error.response?.status === 401) {
+                    toast.error("Email ou mot de passe incorrect.");
+                    return;
+                  }
+
+                  if (axios.isAxiosError(error) && error.response?.status === 403) {
+                    toast.error("Ce compte n'a pas les droits administrateur.");
+                    return;
+                  }
+
+                  toast.error("Connexion impossible pour le moment. Veuillez réessayer.");
                 }
-                login();
-                toast.success("Signed in to Hssabna Admin.");
               })}
             >
               <div>
@@ -76,13 +90,14 @@ export default function LoginPage() {
                 <label className="mb-2 block text-sm font-medium">Password</label>
                 <input className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm" type="password" {...form.register("password")} />
               </div>
-              <button className="w-full rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground" type="submit">
-                Sign in to Admin
+              <button
+                className="w-full rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-70"
+                type="submit"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Signing in..." : "Sign in to Admin"}
               </button>
             </form>
-            <div className="mt-6 rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-              Credentials: <strong>{MOCK_ADMIN_CREDENTIALS.email}</strong> / <strong>{MOCK_ADMIN_CREDENTIALS.password}</strong>
-            </div>
           </div>
         </div>
       </div>

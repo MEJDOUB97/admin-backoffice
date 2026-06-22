@@ -1,10 +1,11 @@
 import { Menu, Moon, Search, Sun, Languages, LogOut } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import { useUiStore } from "@/store/uiStore";
 
 export default function AdminTopbar() {
   const pathname = useLocation().pathname;
+  const navigate = useNavigate();
   const admin = useAuthStore((state) => state.admin);
   const logout = useAuthStore((state) => state.logout);
   const toggleTheme = useUiStore((state) => state.toggleTheme);
@@ -33,11 +34,17 @@ export default function AdminTopbar() {
         <button className="rounded-2xl border border-border p-2" onClick={toggleDirection}>
           <Languages className="h-4 w-4" />
         </button>
-        <button className="rounded-2xl border border-border p-2" onClick={logout}>
+        <button
+          className="rounded-2xl border border-border p-2"
+          onClick={() => {
+            logout();
+            navigate("/login", { replace: true });
+          }}
+        >
           <LogOut className="h-4 w-4" />
         </button>
         <div className="hidden rounded-2xl bg-muted px-3 py-2 text-sm md:block">
-          {admin?.name}
+          {admin?.username ?? admin?.email}
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { hasPermission } from "@/lib/permissions";
+import { getPermissionsForRole, hasPermission } from "@/lib/permissions";
 import { useAuthStore } from "@/store/authStore";
 import type { Permission } from "@/types/admin";
 
@@ -12,6 +12,7 @@ export default function PermissionGate({
   fallback?: ReactNode;
   children: ReactNode;
 }) {
-  const permissions = useAuthStore((state) => state.admin?.permissions ?? []);
+  const role = useAuthStore((state) => state.admin?.role);
+  const permissions = getPermissionsForRole(role);
   return hasPermission(permissions, permission) ? <>{children}</> : <>{fallback}</>;
 }

@@ -1,11 +1,4 @@
-export type AdminRole =
-  | "super_admin"
-  | "operations_admin"
-  | "support_agent"
-  | "finance_reviewer"
-  | "security_analyst"
-  | "content_manager"
-  | "read_only_analyst";
+export type AdminRole = string;
 
 export type Permission =
   | "users.read"
@@ -28,12 +21,15 @@ export type Permission =
   | "admins.manage";
 
 export interface AdminUser {
-  id: string;
-  name: string;
+  id: number;
   email: string;
+  username: string;
   role: AdminRole;
-  permissions: Permission[];
-  avatar: string;
+}
+
+export interface AdminLoginResponse {
+  token: string;
+  user: AdminUser;
 }
 
 export interface AuditEvent {

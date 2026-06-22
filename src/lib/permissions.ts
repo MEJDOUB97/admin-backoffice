@@ -54,3 +54,11 @@ export const rolePermissions: Record<AdminRole, Permission[]> = {
 export function hasPermission(permissions: Permission[], permission: Permission) {
   return permissions.includes(permission);
 }
+
+export function getPermissionsForRole(role?: string) {
+  if (role === "ADMIN") {
+    return rolePermissions.super_admin;
+  }
+
+  return role ? rolePermissions[role] ?? [] : [];
+}

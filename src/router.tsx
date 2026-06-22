@@ -17,6 +17,7 @@ import SettlementsPage from "@/features/settlements/SettlementsPage";
 import SupportInboxPage from "@/features/support/SupportInboxPage";
 import UserDetailPage from "@/features/users/UserDetailPage";
 import UsersPage from "@/features/users/UsersPage";
+import LoadingState from "@/components/common/LoadingState";
 import { useAuthStore } from "@/store/authStore";
 import { useUiStore } from "@/store/uiStore";
 
@@ -34,10 +35,24 @@ function AppFrame() {
 
 function ProtectedLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const token = useAuthStore((state) => state.token);
+  const isHydrating = useAuthStore((state) => state.isHydrating);
+  const hasValidatedSession = useAuthStore((state) => state.hasValidatedSession);
+  const hydrate = useAuthStore((state) => state.hydrate);
   const location = useLocation();
 
-  if (!isAuthenticated) {
+  useEffect(() => {
+    if (token && !hasValidatedSession && !isHydrating) {
+      void hydrate();
+    }
+  }, [hasValidatedSession, hydrate, isHydrating, token]);
+
+  if (!isAuthenticated || !token) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  }
+
+  if (isHydrating || !hasValidatedSession) {
+    return <LoadingState label="Validating admin session..." />;
   }
 
   return <AdminShell />;
