@@ -13,7 +13,7 @@ const links = [
 
 export default function AdminSidebar() {
   return (
-    <aside className="hidden w-72 shrink-0 rounded-[28px] border border-sidebar-border bg-sidebar bg-morocco-mesh p-5 text-sidebar-foreground lg:block">
+    <aside className="sticky top-6 hidden h-[calc(100vh-3rem)] w-72 shrink-0 overflow-y-auto rounded-[28px] border border-sidebar-border bg-sidebar bg-morocco-mesh p-5 text-sidebar-foreground lg:block">
       <div className="mb-8">
         <p className="text-xs uppercase tracking-[0.3em] text-sidebar-foreground/60">Hssabna</p>
         <h1 className="mt-2 text-2xl font-semibold">Admin Back Office</h1>

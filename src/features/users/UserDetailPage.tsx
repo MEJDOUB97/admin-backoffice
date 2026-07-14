@@ -45,22 +45,22 @@ export default function UserDetailPage() {
           <div className="mt-5 flex flex-wrap gap-3">
             <StatusBadge value={user.status} />
           </div>
-          <div className="mt-5 grid gap-4 md:grid-cols-4">
-            <div className="rounded-2xl border border-border p-4">
+          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+            <div className="flex min-h-[96px] flex-col justify-between rounded-2xl border border-border p-4 xl:col-span-2">
               <p className="subtle-text">Total paid by user</p>
-              <MoneyAmount amount={user.totalPaid} className="mt-2 block text-2xl font-semibold" />
+              <MoneyAmount amount={user.totalPaid} className="mt-2 block whitespace-nowrap text-2xl font-semibold tracking-tight tabular-nums" />
             </div>
-            <div className="rounded-2xl border border-border p-4">
+            <div className="flex min-h-[96px] flex-col justify-between rounded-2xl border border-border p-4">
               <p className="subtle-text">Groups</p>
-              <p className="mt-2 text-2xl font-semibold">{user.groupsCount ?? relatedGroups.length}</p>
+              <p className="mt-2 text-2xl font-semibold tabular-nums">{user.groupsCount ?? relatedGroups.length}</p>
             </div>
-            <div className="rounded-2xl border border-border p-4">
+            <div className="flex min-h-[96px] flex-col justify-between rounded-2xl border border-border p-4">
               <p className="subtle-text">Expenses paid</p>
-              <p className="mt-2 text-2xl font-semibold">{user.expensesCount ?? 0}</p>
+              <p className="mt-2 text-2xl font-semibold tabular-nums">{user.expensesCount ?? 0}</p>
             </div>
-            <div className="rounded-2xl border border-border p-4">
+            <div className="flex min-h-[96px] flex-col justify-between rounded-2xl border border-border p-4">
               <p className="subtle-text">Friends</p>
-              <p className="mt-2 text-2xl font-semibold">{user.friendsCount ?? 0}</p>
+              <p className="mt-2 text-2xl font-semibold tabular-nums">{user.friendsCount ?? 0}</p>
             </div>
           </div>
         </div>
@@ -82,28 +82,6 @@ export default function UserDetailPage() {
           </div>
         </div>
 
-        <div className="panel p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className="section-title">Admin actions</h3>
-            <span className="rounded-full bg-secondary px-3 py-1 text-xs text-secondary-foreground">Coming later</span>
-          </div>
-          <div className="mt-4 flex flex-wrap gap-3">
-            {["Force logout", "Reset verification", "Mark trusted", "Export user data", "Block user", "Anonymize user"].map((action) => (
-              <button
-                key={action}
-                className="rounded-2xl border border-border px-4 py-2 text-sm text-muted-foreground opacity-60"
-                disabled
-                title="Requires backend audit-safe endpoint"
-                type="button"
-              >
-                {action}
-              </button>
-            ))}
-          </div>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Admin actions are disabled until audit-safe backend endpoints are implemented.
-          </p>
-        </div>
       </div>
 
       <div className="space-y-6">

@@ -20,6 +20,8 @@ export interface Group {
   frozenReason?: string | null;
   members?: GroupMember[];
   expenses?: GroupExpense[];
+  balances?: GroupBalance[];
+  settlements?: GroupSettlement[];
 }
 
 export interface GroupMember {
@@ -47,4 +49,21 @@ export interface GroupExpense {
   merchant: string;
   splitBetween: string[];
   extractionNotes: string[];
+}
+
+export interface GroupBalance {
+  userId: string;
+  userName: string;
+  email?: string | null;
+  netAmount: number;
+  currency: string;
+}
+
+export interface GroupSettlement {
+  fromUserId: string;
+  fromUserName: string;
+  toUserId: string;
+  toUserName: string;
+  amount: number;
+  currency: string;
 }

@@ -6,7 +6,6 @@ import {
   permissionsCatalog,
   reminderTemplates,
   remoteConfig,
-  securityHighlights,
   settlements,
   users,
 } from "@/lib/mock-data";
@@ -27,6 +26,28 @@ interface AdminDashboardResponse {
   pendingFriendRequests: number;
   recentUsers: unknown[];
   recentGroups: unknown[];
+  expenseVolume: ExpenseVolumePoint[];
+  userGrowth: UserGrowthPoint[];
+  categoryBreakdown: CategoryBreakdownPoint[] | null;
+  friendshipHealthScore: number | null;
+  awkwardnessRisk: number | null;
+}
+
+interface ExpenseVolumePoint {
+  date: string;
+  totalAmount: number;
+  expenseCount: number;
+}
+
+interface UserGrowthPoint {
+  date: string;
+  userCount: number;
+}
+
+interface CategoryBreakdownPoint {
+  category: string;
+  totalAmount: number;
+  expenseCount: number;
 }
 
 interface DashboardData {
@@ -39,18 +60,14 @@ interface DashboardData {
     pendingFriendRequests: number;
     recentUsersCount: number;
     recentGroupsCount: number;
-    friendshipHealth: number;
-    awkwardnessRisk: number;
-    settlementVelocity: number;
-    receiptScanConfidence: number;
-    reminderConversionRate: number;
+    friendshipHealthScore: number | null;
+    awkwardnessRisk: number | null;
   };
   recentUsers: unknown[];
   recentGroups: unknown[];
-  expenseVolume: { month: string; amount: number }[];
-  userGrowth: { month: string; users: number; active: number }[];
-  categoryBreakdown: { name: string; value: number }[];
-  topSpendingMoments: { label: string; value: number }[];
+  expenseVolume: ExpenseVolumePoint[];
+  userGrowth: UserGrowthPoint[];
+  categoryBreakdown: CategoryBreakdownPoint[] | null;
 }
 
 interface AdminUserDTO {
@@ -123,6 +140,8 @@ interface AdminGroupDTO {
 interface AdminGroupDetailDTO extends AdminGroupDTO {
   members: AdminGroupMemberDTO[];
   expenses: AdminGroupExpenseDTO[];
+  balances?: AdminGroupBalanceDTO[];
+  settlements?: AdminGroupSettlementDTO[];
 }
 
 interface AdminGroupMemberDTO {
@@ -142,6 +161,23 @@ interface AdminGroupExpenseDTO {
   payerId: number | null;
   payerName: string | null;
   date: string | null;
+}
+
+interface AdminGroupBalanceDTO {
+  userId: number;
+  userName: string | null;
+  email: string | null;
+  netAmount: number;
+  currency: string | null;
+}
+
+interface AdminGroupSettlementDTO {
+  fromUserId: number;
+  fromUserName: string | null;
+  toUserId: number;
+  toUserName: string | null;
+  amount: number;
+  currency: string | null;
 }
 
 interface AdminGroupPageResponse {
@@ -195,6 +231,7 @@ interface AdminReceiptDTO {
   uploadedByUserId: number | null;
   uploadedByEmail: string | null;
   originalFileName: string | null;
+  fileUrl: string | null;
   contentType: string | null;
   sizeBytes: number | null;
   ocrStatus: string | null;
@@ -205,14 +242,20 @@ interface AdminReceiptDTO {
   ocrDate: string | null;
   ocrConfidence: number | null;
   createdAt: string | null;
+  updatedAt: string | null;
   preview: string | null;
+  expenseTitle?: string | null;
+  groupName?: string | null;
+  uploadedByName?: string | null;
 }
 
 interface AdminReceiptPageResponse {
   items: AdminReceiptDTO[];
   page: number;
+  currentPage?: number;
   size: number;
   totalItems: number;
+  totalElements?: number;
   totalPages: number;
 }
 
@@ -222,6 +265,55 @@ interface GetReceiptsParams {
   search?: string;
   ocrStatus?: string;
   reviewStatus?: string;
+}
+
+interface ReceiptPage {
+  items: Receipt[];
+  page: number;
+  size: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+interface AdminSecurityResponse {
+  metrics: SecurityMetrics;
+  recentAuditLogs: SecurityAuditLog[];
+  riskItems: SecurityRiskItem[];
+  generatedAt: string;
+}
+
+interface SecurityMetrics {
+  auditLogsCount: number;
+  frozenGroupsCount: number;
+  inactiveUsersCount: number;
+  pendingVerificationCodesCount: number;
+  expiredUnusedVerificationCodesCount: number;
+  failedReceiptsCount: number;
+  pendingReviewReceiptsCount: number;
+  pendingFriendRequestsCount: number;
+  pushTokensCount: number | null;
+}
+
+interface SecurityAuditLog {
+  id: number;
+  action: string | null;
+  adminEmail: string | null;
+  adminUserId: number | null;
+  targetType: string | null;
+  targetId: number | null;
+  reason: string | null;
+  metadata: string | null;
+  createdAt: string | null;
+}
+
+interface SecurityRiskItem {
+  type: string;
+  severity: "LOW" | "MEDIUM" | "HIGH" | string;
+  title: string;
+  description: string | null;
+  targetType: string | null;
+  targetId: number | null;
+  createdAt: string | null;
 }
 
 // TODO: Replace this mock API with authenticated backend endpoints for the admin back office.
@@ -269,20 +361,16 @@ export const api = {
         totalExpenses: dashboard.totalExpenses,
         totalExpenseAmount: dashboard.totalExpenseAmount,
         pendingFriendRequests: dashboard.pendingFriendRequests,
-        recentUsersCount: dashboard.recentUsers.length,
-        recentGroupsCount: dashboard.recentGroups.length,
-        friendshipHealth: 0,
-        awkwardnessRisk: 0,
-        settlementVelocity: 0,
-        receiptScanConfidence: 0,
-        reminderConversionRate: 0,
+        recentUsersCount: dashboard.recentUsers?.length ?? 0,
+        recentGroupsCount: dashboard.recentGroups?.length ?? 0,
+        friendshipHealthScore: dashboard.friendshipHealthScore ?? null,
+        awkwardnessRisk: dashboard.awkwardnessRisk ?? null,
       },
-      recentUsers: dashboard.recentUsers,
-      recentGroups: dashboard.recentGroups,
-      expenseVolume: [],
-      userGrowth: [],
-      categoryBreakdown: [],
-      topSpendingMoments: [],
+      recentUsers: dashboard.recentUsers ?? [],
+      recentGroups: dashboard.recentGroups ?? [],
+      expenseVolume: dashboard.expenseVolume ?? [],
+      userGrowth: dashboard.userGrowth ?? [],
+      categoryBreakdown: dashboard.categoryBreakdown,
     };
   },
   getUsers: async ({ page = 0, size = 100, search, status }: GetUsersParams = {}): Promise<User[]> => {
@@ -435,6 +523,21 @@ export const api = {
           splitBetween: [],
           extractionNotes: [],
         })),
+        balances: (group.balances ?? []).map((balance) => ({
+          userId: String(balance.userId),
+          userName: balance.userName ?? `User ${balance.userId}`,
+          email: balance.email,
+          netAmount: balance.netAmount,
+          currency: balance.currency ?? "MAD",
+        })),
+        settlements: (group.settlements ?? []).map((settlement) => ({
+          fromUserId: String(settlement.fromUserId),
+          fromUserName: settlement.fromUserName ?? `User ${settlement.fromUserId}`,
+          toUserId: String(settlement.toUserId),
+          toUserName: settlement.toUserName ?? `User ${settlement.toUserId}`,
+          amount: settlement.amount,
+          currency: settlement.currency ?? "MAD",
+        })),
       };
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 404) {
@@ -482,6 +585,21 @@ export const api = {
         splitBetween: [],
         extractionNotes: [],
       })),
+      balances: (group.balances ?? []).map((balance) => ({
+        userId: String(balance.userId),
+        userName: balance.userName ?? `User ${balance.userId}`,
+        email: balance.email,
+        netAmount: balance.netAmount,
+        currency: balance.currency ?? "MAD",
+      })),
+      settlements: (group.settlements ?? []).map((settlement) => ({
+        fromUserId: String(settlement.fromUserId),
+        fromUserName: settlement.fromUserName ?? `User ${settlement.fromUserId}`,
+        toUserId: String(settlement.toUserId),
+        toUserName: settlement.toUserName ?? `User ${settlement.toUserId}`,
+        amount: settlement.amount,
+        currency: settlement.currency ?? "MAD",
+      })),
     };
   },
   getGroupsByUserId: async (userId: string) => delay(groups.filter((group) => group.memberIds.includes(userId))),
@@ -506,7 +624,7 @@ export const api = {
 
     return response.data.items.map(mapAdminSupportTicket);
   },
-  getReceipts: async ({ page = 0, size = 100, search, ocrStatus, reviewStatus }: GetReceiptsParams = {}): Promise<Receipt[]> => {
+  getReceipts: async ({ page = 0, size = 20, search, ocrStatus, reviewStatus }: GetReceiptsParams = {}): Promise<ReceiptPage> => {
     const response = await http.get<AdminReceiptPageResponse>("/api/admin/receipts", {
       params: {
         page,
@@ -517,7 +635,24 @@ export const api = {
       },
     });
 
-    return response.data.items.map(mapAdminReceipt);
+    return {
+      items: response.data.items.map(mapAdminReceipt),
+      page: response.data.currentPage ?? response.data.page,
+      size: response.data.size,
+      totalItems: response.data.totalElements ?? response.data.totalItems,
+      totalPages: response.data.totalPages,
+    };
+  },
+  getReceiptById: async (receiptId: string): Promise<Receipt | null> => {
+    try {
+      const response = await http.get<AdminReceiptDTO>(`/api/admin/receipts/${receiptId}`);
+      return mapAdminReceipt(response.data);
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        return null;
+      }
+      throw error;
+    }
   },
   getAdminConfig: async (): Promise<ConfigResponse> => {
     const response = await http.get<ConfigResponse>("/api/admin/config");
@@ -527,7 +662,10 @@ export const api = {
     const response = await http.put<ConfigSetting>(`/api/admin/config/${encodeURIComponent(key)}`, { value });
     return response.data;
   },
-  getSecurity: async () => delay(securityHighlights),
+  getSecurity: async (): Promise<AdminSecurityResponse> => {
+    const response = await http.get<AdminSecurityResponse>("/api/admin/security");
+    return response.data;
+  },
   getAuditLogs: async () => delay(auditLogs),
   getReminders: async () => delay(reminderTemplates),
   getRemoteConfig: async () => delay(remoteConfig),
@@ -556,6 +694,7 @@ function mapAdminReceipt(receipt: AdminReceiptDTO): Receipt {
     uploadedByUserId: receipt.uploadedByUserId != null ? String(receipt.uploadedByUserId) : null,
     uploadedByEmail: receipt.uploadedByEmail,
     originalFileName: receipt.originalFileName,
+    fileUrl: receipt.fileUrl,
     contentType: receipt.contentType,
     sizeBytes: receipt.sizeBytes,
     ocrStatus: mapOcrStatus(receipt.ocrStatus),
@@ -566,22 +705,38 @@ function mapAdminReceipt(receipt: AdminReceiptDTO): Receipt {
     ocrDate: receipt.ocrDate,
     ocrConfidence: receipt.ocrConfidence,
     createdAt: receipt.createdAt,
+    updatedAt: receipt.updatedAt,
     preview: receipt.preview,
+    expenseTitle: receipt.expenseTitle,
+    groupName: receipt.groupName,
+    uploadedByName: receipt.uploadedByName,
   };
 }
 
 function mapOcrStatus(status: string | null): OcrStatus {
-  if (status === "PROCESSING" || status === "PROCESSED" || status === "FAILED") {
+  if (status === "PENDING" || status === "PROCESSING" || status === "COMPLETED" || status === "FAILED") {
     return status;
   }
-  return "NOT_PROCESSED";
+  if (status === "NOT_PROCESSED") {
+    return "PENDING";
+  }
+  if (status === "PROCESSED") {
+    return "COMPLETED";
+  }
+  return status ?? "PENDING";
 }
 
 function mapReceiptReviewStatus(status: string | null): ReceiptReviewStatus {
-  if (status === "REVIEWED" || status === "REJECTED") {
+  if (status === "PENDING_REVIEW" || status === "APPROVED" || status === "NEEDS_REVIEW" || status === "REJECTED") {
     return status;
   }
-  return "PENDING";
+  if (status === "PENDING") {
+    return "PENDING_REVIEW";
+  }
+  if (status === "REVIEWED") {
+    return "APPROVED";
+  }
+  return status ?? "PENDING_REVIEW";
 }
 
 function mapSupportStatus(status: string | null): SupportTicket["status"] {

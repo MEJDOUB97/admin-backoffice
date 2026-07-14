@@ -1,11 +1,9 @@
-const money = new Intl.NumberFormat("fr-MA", {
-  style: "currency",
-  currency: "MAD",
-  maximumFractionDigits: 0,
+const money = new Intl.NumberFormat("fr-FR", {
+  maximumFractionDigits: 2,
 });
 
 export function formatMoney(amount: number) {
-  return money.format(amount);
+  return `${money.format(Number(amount || 0))} MAD`;
 }
 
 export function formatCompactNumber(amount: number) {

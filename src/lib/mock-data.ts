@@ -133,13 +133,6 @@ export const remoteConfig = {
   rolloutRules: "Android Rabat 70%, Casablanca all versions 100%, iOS 2.8.4 100%"
 };
 
-export const securityHighlights = [
-  { title: "Duplicate accounts", value: 3 },
-  { title: "High-frequency invite links", value: 6 },
-  { title: "Unusual expense amounts", value: 11 },
-  { title: "Repeated failed OCR scans", value: 8 }
-];
-
 export const permissionsCatalog: Permission[] = [
   "users.read",
   "users.write",
