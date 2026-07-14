@@ -3,7 +3,6 @@ import { Navigate, Outlet, createBrowserRouter, useLocation } from "react-router
 import AdminShell from "@/components/layout/AdminShell";
 import LoginPage from "@/features/auth/LoginPage";
 import AnalyticsPage from "@/features/analytics/AnalyticsPage";
-import AuditLogsPage from "@/features/audit/AuditLogsPage";
 import AppConfigPage from "@/features/config/AppConfigPage";
 import DashboardPage from "@/features/dashboard/DashboardPage";
 import ExpenseDetailPage from "@/features/expenses/ExpenseDetailPage";
@@ -83,7 +82,6 @@ export const router = createBrowserRouter([
           { path: "security", element: <SecurityPage /> },
           { path: "analytics", element: <AnalyticsPage /> },
           { path: "config", element: <AppConfigPage /> },
-          { path: "audit", element: <AuditLogsPage /> },
         ],
       },
     ],

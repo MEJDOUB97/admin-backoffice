@@ -1,4 +1,4 @@
-import { Home, LifeBuoy, LockKeyhole, Receipt, Settings2, ShieldAlert, Users } from "lucide-react";
+import { Home, LifeBuoy, Receipt, Settings2, ShieldAlert, Users } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -9,7 +9,6 @@ const links = [
   { to: "/admin/support", label: "Support", icon: LifeBuoy },
   { to: "/admin/security", label: "Security", icon: ShieldAlert },
   { to: "/admin/config", label: "Config", icon: Settings2 },
-  { to: "/admin/audit", label: "Audit", icon: LockKeyhole },
 ];
 
 export default function AdminSidebar() {

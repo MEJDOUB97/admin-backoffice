@@ -2,10 +2,8 @@ import { ColumnDef } from "@tanstack/react-table";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { toast } from "sonner";
-import PermissionGate from "@/components/common/PermissionGate";
-import ReasonRequiredDialog from "@/components/common/ReasonRequiredDialog";
-import RiskBadge from "@/components/common/RiskBadge";
+import EmptyState from "@/components/common/EmptyState";
+import LoadingState from "@/components/common/LoadingState";
 import StatusBadge from "@/components/common/StatusBadge";
 import DataTable from "@/components/tables/DataTable";
 import { api } from "@/lib/api";
@@ -13,8 +11,12 @@ import { formatDateTime } from "@/lib/format";
 import type { User } from "@/types/user";
 
 export default function UsersPage() {
-  const { data = [] } = useQuery({ queryKey: ["users"], queryFn: api.getUsers });
-  const [selectedAction, setSelectedAction] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<"all" | "active" | "blocked">("all");
+  const { data = [], isError, isLoading, refetch } = useQuery({
+    queryKey: ["users", search, status],
+    queryFn: () => api.getUsers({ search, status: status === "all" ? undefined : status }),
+  });
 
   const columns = useMemo<ColumnDef<User>[]>(
     () => [
@@ -25,40 +27,68 @@ export default function UsersPage() {
       },
       { header: "Phone / Email", cell: ({ row }) => <div><div>{row.original.phone}</div><div className="text-xs text-muted-foreground">{row.original.email}</div></div> },
       { header: "City", accessorKey: "city" },
-      { header: "Platform", accessorKey: "platform" },
-      { header: "App version", accessorKey: "appVersion" },
       { header: "Status", cell: ({ row }) => <StatusBadge value={row.original.status} /> },
-      { header: "Risk", cell: ({ row }) => <RiskBadge score={row.original.riskScore} /> },
-      { header: "Last active", cell: ({ row }) => formatDateTime(row.original.lastActive) },
+      { header: "Role", cell: ({ row }) => row.original.role ?? "USER" },
+      { header: "Currency", cell: ({ row }) => row.original.currencyCode ?? "Not set" },
+      { header: "Joined", cell: ({ row }) => formatDateTime(row.original.joinedAt) },
     ],
     [],
   );
 
+  if (isError) {
+    return (
+      <div className="panel flex min-h-56 flex-col items-center justify-center gap-4 p-8 text-center">
+        <div>
+          <h3 className="text-lg font-semibold">Unable to load users</h3>
+          <p className="subtle-text">The admin users API is unavailable. Check that the backend is running, then retry.</p>
+        </div>
+        <button className="rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground" onClick={() => refetch()}>
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return <LoadingState label="Loading users..." />;
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap gap-3">
-        {["Active", "Blocked", "Verified", "Suspicious", "New users", "High-value users"].map((filter) => (
-          <span key={filter} className="rounded-full border border-border px-3 py-1.5 text-sm">{filter}</span>
+      <div className="flex flex-wrap items-center gap-3">
+        {[
+          { label: "All", value: "all" },
+          { label: "Active", value: "active" },
+          { label: "Blocked", value: "blocked" },
+        ].map((filter) => (
+          <button
+            key={filter.value}
+            className={`rounded-full border px-3 py-1.5 text-sm ${
+              status === filter.value
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border text-muted-foreground"
+            }`}
+            onClick={() => setStatus(filter.value as "all" | "active" | "blocked")}
+            type="button"
+          >
+            {filter.label}
+          </button>
         ))}
+        <span className="rounded-full border border-dashed border-border px-3 py-1.5 text-sm text-muted-foreground" title="Requires more backend user state fields">
+          More filters coming later
+        </span>
       </div>
-      <DataTable columns={columns} data={data} searchPlaceholder="Search users by name, city, email..." />
-      <div className="panel p-5">
-        <div className="flex flex-wrap gap-3">
-          <PermissionGate permission="users.block">
-            <button className="rounded-2xl bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground" onClick={() => setSelectedAction("Block user")}>Block user</button>
-          </PermissionGate>
-          <PermissionGate permission="users.block">
-            <button className="rounded-2xl border border-border px-4 py-2 text-sm" onClick={() => setSelectedAction("Anonymize user")}>Anonymize user</button>
-          </PermissionGate>
-        </div>
-      </div>
-      <ReasonRequiredDialog
-        title={selectedAction ?? "Sensitive action"}
-        description="Sensitive user actions must include an internal reason for the audit log."
-        open={Boolean(selectedAction)}
-        onOpenChange={(open) => !open && setSelectedAction(null)}
-        onConfirm={(reason) => toast.success(`${selectedAction} recorded`, { description: reason })}
-      />
+      {data.length || search ? (
+        <DataTable
+          columns={columns}
+          data={data}
+          globalFilter={search}
+          onGlobalFilterChange={setSearch}
+          searchPlaceholder="Search users by name, city, email..."
+        />
+      ) : (
+        <EmptyState title="No users found" description="No users matched the current backend query." />
+      )}
     </div>
   );
 }

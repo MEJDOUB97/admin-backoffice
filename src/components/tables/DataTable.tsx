@@ -12,13 +12,19 @@ import { useMemo, useState } from "react";
 export default function DataTable<TData>({
   columns,
   data,
+  globalFilter: controlledGlobalFilter,
+  onGlobalFilterChange,
   searchPlaceholder = "Search...",
 }: {
   columns: ColumnDef<TData>[];
   data: TData[];
+  globalFilter?: string;
+  onGlobalFilterChange?: (value: string) => void;
   searchPlaceholder?: string;
 }) {
-  const [globalFilter, setGlobalFilter] = useState("");
+  const [internalGlobalFilter, setInternalGlobalFilter] = useState("");
+  const globalFilter = controlledGlobalFilter ?? internalGlobalFilter;
+  const setGlobalFilter = onGlobalFilterChange ?? setInternalGlobalFilter;
   const table = useReactTable({
     data,
     columns,

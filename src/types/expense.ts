@@ -16,6 +16,7 @@ export interface Expense {
   title: string;
   groupId: string;
   paidBy: string;
+  payerName?: string;
   amount: number;
   category: ExpenseCategory;
   source: ExpenseSource;

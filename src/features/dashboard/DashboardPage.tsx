@@ -11,7 +11,21 @@ import { api } from "@/lib/api";
 import { formatCompactNumber, formatMoney, formatPercent } from "@/lib/format";
 
 export default function DashboardPage() {
-  const { data, isLoading } = useQuery({ queryKey: ["dashboard"], queryFn: api.getDashboard });
+  const { data, isError, isLoading, refetch } = useQuery({ queryKey: ["dashboard"], queryFn: api.getDashboard });
+
+  if (isError) {
+    return (
+      <div className="panel flex min-h-56 flex-col items-center justify-center gap-4 p-8 text-center">
+        <div>
+          <h3 className="text-lg font-semibold">Unable to load dashboard</h3>
+          <p className="subtle-text">The admin dashboard API is unavailable. Check that the backend is running, then retry.</p>
+        </div>
+        <button className="rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground" onClick={() => refetch()}>
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   if (isLoading || !data) {
     return <LoadingState label="Loading Hssabna overview..." />;
@@ -23,13 +37,13 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Total users" value={formatCompactNumber(metrics.totalUsers)} hint="Steady weekly growth" icon={Users} />
-        <MetricCard label="Active users today" value={formatCompactNumber(metrics.activeUsersToday)} hint="Morning usage spike in Casablanca" icon={UsersRound} accent="from-amber-500/20 to-transparent" />
+        <MetricCard label="Active users" value={formatCompactNumber(metrics.activeUsers)} hint="Accounts currently marked active" icon={UsersRound} accent="from-amber-500/20 to-transparent" />
         <MetricCard label="Total groups" value={formatCompactNumber(metrics.totalGroups)} hint="Trip and roommates lead" icon={Wallet} accent="from-sky-500/20 to-transparent" />
         <MetricCard label="Total expenses" value={formatCompactNumber(metrics.totalExpenses)} hint="Receipt scans outperform manual entries" icon={Receipt} accent="from-rose-500/20 to-transparent" />
-        <MetricCard label="Tracked MAD volume" value={formatMoney(metrics.totalMadVolume)} hint="Healthy volume this month" icon={CircleDollarSign} />
-        <MetricCard label="Pending settlements" value={String(metrics.pendingSettlements)} hint="Focus on rent and travel groups" icon={RefreshCcw} accent="from-amber-500/20 to-transparent" />
-        <MetricCard label="Open support tickets" value={String(metrics.openSupportTickets)} hint="Money tension detector active" icon={AlertTriangle} accent="from-orange-500/20 to-transparent" />
-        <MetricCard label="Suspicious activity" value={String(metrics.suspiciousActivity)} hint="Device-sharing watchlist updated" icon={ShieldAlert} accent="from-rose-500/20 to-transparent" />
+        <MetricCard label="Tracked MAD volume" value={formatMoney(metrics.totalExpenseAmount)} hint="Total recorded expense amount" icon={CircleDollarSign} />
+        <MetricCard label="Pending friend requests" value={String(metrics.pendingFriendRequests)} hint="Requests waiting for action" icon={RefreshCcw} accent="from-amber-500/20 to-transparent" />
+        <MetricCard label="Recent users" value={String(metrics.recentUsersCount)} hint="Latest accounts returned by API" icon={AlertTriangle} accent="from-orange-500/20 to-transparent" />
+        <MetricCard label="Recent groups" value={String(metrics.recentGroupsCount)} hint="Latest groups returned by API" icon={ShieldAlert} accent="from-rose-500/20 to-transparent" />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
